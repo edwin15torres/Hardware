@@ -1,49 +1,145 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
-from PyQt5.QtPrintSupport import QPrinter, QPrintPreviewDialog
-from PyQt5.QtGui import QTextDocument
-from PyQt5.QtCore import QSizeF
 import sys
+import win32print
+import win32ui
+import win32con
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton,
+    QTextEdit, QDialog
+)
+from PIL import Image, ImageWin
 
-class VentanaFactura(QWidget):
-    def __init__(self):
+# -------------------------------
+# Generador de texto de facturaimg
+# -------------------------------
+def generar_texto_factura():
+    return """\
+        FACTURA DE VENTA
+Cliente: Juan Pérez
+Fecha: 25/07/2025
+
+Item         Cant   Precio
+----------------------------
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Gaseosa       1     2000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+Salchicha     2     8000
+----------------------------
+TOTAL:             $10.000
+
+¡Gracias por su compra!
+Vuelva pronto :)
+"""
+
+# -------------------------------
+# Vista previa en PyQt
+# -------------------------------
+class VistaPreviaFactura(QDialog):
+    def __init__(self, texto):
         super().__init__()
-        self.setWindowTitle("Factura")
-        self.setFixedSize(600, 400)
+        self.setWindowTitle("Vista previa de factura térmica")
+        self.setFixedSize(300, 400)
 
         layout = QVBoxLayout(self)
-        self.btn_previsualizar = QPushButton("Previsualizar e Imprimir/Guardar como PDF")
-        self.btn_previsualizar.clicked.connect(self.mostrar_vista_previa)
-        layout.addWidget(self.btn_previsualizar)
 
-    def generar_html_factura(self):
-        return """
-        <h2 style='text-align:center;'>Factura de Venta</h2>
-        <p><strong>Cliente:</strong> Juan Pérez</p>
-        <p><strong>Fecha:</strong> 25/07/2025</p>
-        <table border='1' cellspacing='0' cellpadding='4' width='100%'>
-            <tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
-            <tr><td>Salchicha</td><td>2</td><td>$8.000</td></tr>
-            <tr><td>Gaseosa</td><td>1</td><td>$2.000</td></tr>
-        </table>
-        <p style='text-align:right;'><strong>Total:</strong> $10.000</p>
-        """
+        self.text_edit = QTextEdit()
+        self.text_edit.setPlainText(texto)
+        self.text_edit.setReadOnly(True)
+        layout.addWidget(self.text_edit)
 
-    def mostrar_vista_previa(self):
-        documento = QTextDocument()
-        documento.setHtml(self.generar_html_factura())
+        btn_imprimir = QPushButton("Imprimir en impresora térmica")
+        btn_imprimir.clicked.connect(lambda: self.imprimir_ticket(texto))
+        layout.addWidget(btn_imprimir)
 
-        printer = QPrinter(QPrinter.HighResolution)
-        printer.setPageSize(QPrinter.Custom)
-        printer.setPaperSize(QSizeF(58, 297), QPrinter.Millimeter)
-        printer.setFullPage(True)
+    def imprimir_ticket(self, texto):
+        try:
+            printer_name = win32print.GetDefaultPrinter()
+            hDC = win32ui.CreateDC()
+            hDC.CreatePrinterDC(printer_name)
+            hDC.StartDoc("Factura")
+            hDC.StartPage()
 
-        preview = QPrintPreviewDialog(printer, self)
-        preview.setWindowTitle("Vista previa de la factura")
-        preview.paintRequested.connect(documento.print_)
-        preview.exec_()
+            # Cargar y dibujar imagen PNG en modo GDI (vía PIL + ImageWin)
+            try:
+                img = Image.open("logo.png").convert("RGB")
 
+                # Escalar conservando proporción (max ancho 250)
+                max_width = 250
+                w_percent = max_width / float(img.width)
+                new_height = int((float(img.height) * float(w_percent)))
+                img = img.resize((max_width, new_height))
+
+                dib = ImageWin.Dib(img)
+                dib.draw(hDC.GetHandleOutput(), (25, 10, 25 + max_width, 10 + new_height))
+                y = 10 + new_height + 10  # Espacio para el texto
+
+            except Exception as e:
+                print("Error al cargar logo:", e)
+                y = 10
+
+            # Fuente
+            font = win32ui.CreateFont({
+                "name": "Courier New",
+                "height": 25,
+                "weight": 400
+            })
+            hDC.SelectObject(font)
+
+            salto = 20
+            for linea in texto.splitlines():
+                hDC.TextOut(10, y, linea.strip())
+                y += salto
+
+            hDC.EndPage()
+            hDC.EndDoc()
+            hDC.DeleteDC()
+            self.accept()
+        except Exception as e:
+            print("Error al imprimir:", e)
+
+# -------------------------------
+# Ventana principal
+# -------------------------------
+class VentanaPrincipal(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Factura Térmica")
+        self.setFixedSize(300, 200)
+
+        layout = QVBoxLayout(self)
+
+        btn_previsualizar = QPushButton("Previsualizar Factura")
+        btn_previsualizar.clicked.connect(self.mostrar_previsualizacion)
+        layout.addWidget(btn_previsualizar)
+
+    def mostrar_previsualizacion(self):
+        texto = generar_texto_factura()
+        vista = VistaPreviaFactura(texto)
+        vista.exec_()
+
+# -------------------------------
+# Inicio de la app
+# -------------------------------
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ventana = VentanaFactura()
+    ventana = VentanaPrincipal()
     ventana.show()
     sys.exit(app.exec_())
