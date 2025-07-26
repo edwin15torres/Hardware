@@ -1,15 +1,14 @@
 import serial
 import time
 
-# Reemplaza 'COM3' con el puerto correcto en tu sistema
-puerto = 'COM3'  
-baudrate = 9600  # Velocidad de baudios típica, verifica la tuya
-
-ser = serial.Serial(puerto, baudrate, timeout=1)
+# Reemplaza con el puerto correspondiente en tu sistema (ej: COM3 o /dev/ttyUSB0)
+puerto = 'COM3'
+velocidad = 9600
 
 try:
-    if ser.is_open:
-        ser.write(b'Hola, cliente!\n')
-        time.sleep(1)
-finally:
+    ser = serial.Serial(puerto, velocidad, timeout=1)
+    ser.write(b'Hola, cliente!\r\n')  # Texto que se mostrará
+    time.sleep(1)
     ser.close()
+except serial.SerialException as e:
+    print("Error al abrir el puerto:", e)
