@@ -20,28 +20,7 @@ Fecha: 25/07/2025
 Item         Cant   Precio
 ----------------------------
 Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
 Gaseosa       1     2000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
-Salchicha     2     8000
 ----------------------------
 TOTAL:             $10.000
 
