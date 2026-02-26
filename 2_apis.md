@@ -481,6 +481,10 @@ curl -X GET http://localhost:5000/api/productos \
   -H "Authorization: Bearer $TOKEN"
 
 
+curl -X GET http://localhost:5000/api/productos \
+  -H "Authorization: Bearer $TOKEN"
+
+
 # Crear un nuevo producto
 curl -X POST http://localhost:5000/api/productos \
   -H "Authorization: Bearer $TOKEN" \
