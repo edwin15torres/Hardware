@@ -473,3 +473,7 @@ Este error significa que no estás usando la ruta completa al ejecutable de ngro
 ---
 
 **¿Necesitas ayuda?** Revisa la documentación oficial de ngrok: [https://ngrok.com/docs](https://ngrok.com/docs)
+
+
+
+taskkill /IM ngrok.exe /F
