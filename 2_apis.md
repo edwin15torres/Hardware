@@ -115,8 +115,8 @@ Autentica un usuario y devuelve un token JWT para acceder a los demás endpoints
 curl -X POST http://localhost:5000/api/login \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre_usuario": "ADMINISTRADOR",
-    "contrasena": "ADMINISTRADOR"
+    "nombre_usuario": "admin",
+    "contrasena": "admin"
   }'
 
   curl -X POST https://subformative-marylee-solvently.ngrok-free.dev/api/login \
